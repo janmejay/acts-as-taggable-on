@@ -79,12 +79,6 @@ module ActiveRecord
             
               before_save :save_cached_tag_list
               after_save :save_tags
-              
-              if respond_to?(:named_scope)
-                named_scope :tagged_with, lambda{ |tags, options|
-                  find_options_for_find_tagged_with(tags, options)
-                }
-              end
             end
             
             include ActiveRecord::Acts::TaggableOn::InstanceMethods
@@ -228,7 +222,7 @@ module ActiveRecord
           add_custom_context(context)
           return instance_variable_get("@#{var_name}") unless instance_variable_get("@#{var_name}").nil?
         
-          if !owner && self.class.caching_tag_list_on?(context) and !(cached_value = cached_tag_list_on(context)).nil?
+          if !owner && self.class.caching_tag_list_on?(context) and !(cached_value = cached_tag_list_on(context, owner)).nil?
             instance_variable_set("@#{var_name}", TagList.from(self["cached_#{var_name}"]))
           else
             instance_variable_set("@#{var_name}", TagList.new(*tags_on(context, owner).map(&:name)))
@@ -287,11 +281,15 @@ module ActiveRecord
           (custom_contexts + self.class.tag_types.map(&:to_s)).each do |tag_type|
             next unless instance_variable_get("@#{tag_type.singularize}_list")
             owner = instance_variable_get("@#{tag_type.singularize}_list").owner
-            new_tag_names = instance_variable_get("@#{tag_type.singularize}_list") - tags_on(tag_type).map(&:name)
-            old_tags = tags_on(tag_type).reject { |tag| instance_variable_get("@#{tag_type.singularize}_list").include?(tag.name) }
+            new_tag_names = instance_variable_get("@#{tag_type.singularize}_list") - tags_on(tag_type, owner).map(&:name)
+            old_tags = tags_on(tag_type, owner).reject { |tag| instance_variable_get("@#{tag_type.singularize}_list").include?(tag.name) }
           
             self.class.transaction do
-              base_tags.delete(*old_tags) if old_tags.any?
+              (owner.nil? ? base_tags : owner.owned_tags).delete(*old_tags) if old_tags.any?
+              
+              
+              (owner.nil? ? base_tags : owner.owned_tags).delete(*old_tags) if old_tags.any?
+
               new_tag_names.each do |new_tag_name|
                 new_tag = Tag.find_or_create_with_like_by_name(new_tag_name)
                 Tagging.create(:tag_id => new_tag.id, :context => tag_type, 
