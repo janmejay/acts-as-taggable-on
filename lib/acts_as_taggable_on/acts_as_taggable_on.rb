@@ -286,9 +286,6 @@ module ActiveRecord
           
             self.class.transaction do
               (owner.nil? ? base_tags : owner.owned_tags).delete(*old_tags) if old_tags.any?
-              
-              
-              (owner.nil? ? base_tags : owner.owned_tags).delete(*old_tags) if old_tags.any?
 
               new_tag_names.each do |new_tag_name|
                 new_tag = Tag.find_or_create_with_like_by_name(new_tag_name)
