@@ -39,6 +39,20 @@ module ActiveRecord
         def is_tagger?
           self.class.is_tagger?
         end
+        
+        # Return all tags tagged by tagger with count
+        def tag_counts
+          joins = ["LEFT OUTER JOIN #{Tagging.table_name} ON #{Tag.table_name}.id = #{Tagging.table_name}.tag_id"]
+          conditions = "taggings.tagger_type = '#{self.class}'"
+          group_by  = "#{Tag.table_name}.id, #{Tag.table_name}.name HAVING COUNT(*) > 0"
+          
+          Tag.find(:all, {
+            :select     => "tags.id, tags.name, COUNT(*) AS count",
+            :conditions => conditions,
+            :joins      => joins.join(" "),
+            :group      => group_by
+          })
+        end
       end
       
       module SingletonMethods

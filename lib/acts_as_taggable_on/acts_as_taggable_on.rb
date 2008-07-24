@@ -248,8 +248,10 @@ module ActiveRecord
           add_custom_context(context)
         end
         
+        # TODO : See how to use 'tag_list_on' with cache
         def tag_counts_on(context,options={})
-          self.class.tag_counts_on(context,{:conditions => ["#{Tag.table_name}.name IN (?)", tag_list_on(context)]}.reverse_merge!(options))
+          #self.class.tag_counts_on(context,{:conditions => ["#{Tag.table_name}.name IN (?)", tag_list_on(context)]}.reverse_merge!(options))
+          self.class.tag_counts_on(context,{:conditions => ["#{self.class.table_name}.id = ?", self.id]}.reverse_merge!(options))
         end
 
         def related_tags_for(context, klass, options = {})
