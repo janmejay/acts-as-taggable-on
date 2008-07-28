@@ -6,6 +6,7 @@ describe "Tagger" do
     @user = TaggableUser.new
     @user2 = TaggableUser.new
     @taggable = TaggableModel.new(:name => "Bob Jones")
+    @taggable2 = TaggableModel.new(:name => "John Doe")
   end
   
   it "should have taggings" do
@@ -53,13 +54,33 @@ describe "Tagger" do
   it "should have his own tags on taggable" do
     @user.tag(@taggable, :with=>'ruby', :on=>:tags)
     @user2.tag(@taggable, :with=>'ruby,rubyonrails', :on=>:tags)
+    @user2.tag(@taggable2, :with=>'ruby,merb', :on=>:tags)
     @taggable.tag_list.to_s.should == 'ruby, rubyonrails'
     
-    @taggable.tag_counts.first.name = 'ruby'
-    @taggable.tag_counts.first.count = 2
+    @taggable.tag_counts.length.should  == 2
+    @taggable.tag_counts.first.name     = 'ruby'
+    @taggable.tag_counts.first.count    = 2
     
-    @taggable.tag_counts.last.name = 'rubyonrails'
+    @taggable.tag_counts.last.name  = 'rubyonrails'
     @taggable.tag_counts.last.count = 1
+    
+    # User 1
+    @user.tag_counts.length.should  == 1
+    @user.tag_counts.first.name     == "ruby"
+    @user.tag_counts.first.count    == 1
+    @user.tag_counts.map {|tag| "#{tag.name}:#{tag.count}"}.join(',').should == "ruby:1"
+
+    # User 2
+    @user2.tag_counts.length.should == 3
+    @user2.tag_counts.first.name    == "ruby"
+    @user2.tag_counts.first.count   == 2
+    
+    @user2.tag_counts.last.name   == "rubyonrails"
+    @user2.tag_counts.last.count  == 1
+    
+    @user2.tag_counts.last.name   == "merb"
+    @user2.tag_counts.last.count  == 1
+    @user2.tag_counts.map {|tag| "#{tag.name}:#{tag.count}"}.join(',').should == "ruby:2,rubyonrails:1,merb:1" 
   end
   
 end
