@@ -79,6 +79,12 @@ module ActiveRecord
             
               before_save :save_cached_tag_list
               after_save :save_tags
+              
+              if respond_to?(:named_scope)
+                named_scope :tagged_with, lambda{ |tags, options|
+                  find_options_for_find_tagged_with(tags, options)
+                }
+              end
             end
             
             include ActiveRecord::Acts::TaggableOn::InstanceMethods
@@ -248,10 +254,9 @@ module ActiveRecord
           add_custom_context(context)
         end
         
-        # TODO : See how to use 'tag_list_on' with cache
         def tag_counts_on(context,options={})
-          #self.class.tag_counts_on(context,{:conditions => ["#{Tag.table_name}.name IN (?)", tag_list_on(context)]}.reverse_merge!(options))
-          self.class.tag_counts_on(context,{:conditions => ["#{self.class.table_name}.id = ?", self.id]}.reverse_merge!(options))
+          self.class.tag_counts_on(context,{:conditions => ["#{Tag.table_name}.name IN (?)", tag_list_on(context)]}.reverse_merge!(options))
+          #self.class.tag_counts_on(context,{:conditions => ["#{self.class.table_name}.id = ?", self.id]}.reverse_merge!(options))
         end
 
         def related_tags_for(context, klass, options = {})

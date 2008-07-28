@@ -42,9 +42,9 @@ module ActiveRecord
         
         # Return all tags tagged by tagger with count
         def tag_counts(options={})
-          joins = ["LEFT OUTER JOIN #{Tagging.table_name} ON #{Tag.table_name}.id = #{Tagging.table_name}.tag_id"]
-          conditions = "#{Tagging.table_name}.tagger_type = '#{self.class}' AND #{Tagging.table_name}.tagger_id = #{self.id}"
-          group_by  = "#{Tag.table_name}.id, #{Tag.table_name}.name HAVING COUNT(*) > 0"
+          joins       = ["LEFT OUTER JOIN #{Tagging.table_name} ON #{Tag.table_name}.id = #{Tagging.table_name}.tag_id"]
+          conditions  = "#{Tagging.table_name}.tagger_type = '#{self.class}' AND #{Tagging.table_name}.tagger_id = #{self.id}"
+          group_by    = "#{Tag.table_name}.id, #{Tag.table_name}.name HAVING COUNT(*) > 0"
           
           Tag.find(:all, {
             :select     => "tags.id, tags.name, COUNT(*) AS count",
