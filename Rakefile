@@ -3,6 +3,15 @@ GEMSPEC = 'acts-as-taggable-on.gemspec'
 rule '.gemspec' => '.gemspec.source' do |t|
   constants = {'RUBY_FILES' => Dir['**/*.rb']}
   File.open t.name, 'w' do |target|
+    target.print <<END
+# This file is generated! Don't modify it by hand!
+# Instead, edit the .gemspec.source file, and run:
+#   rake gemspec
+# Or just run
+#   rake gem
+# to build the gemspec and the gem together.
+END
+    target.puts; target.puts
     constants.each_pair do |k,v|
       target.puts "#{k} = #{v.inspect}"
     end
