@@ -242,8 +242,12 @@ module ActiveRecord
           
           add_custom_context(context)
         
-          if owner.nil? && self.class.caching_tag_list_on?(context) and !(cached_value = cached_tag_list_on(context, owner)).nil?
-            instance_variable_set(var_sym, TagList.from(self["cached_#{var_name}"]))
+          if owner.nil?
+            if self.class.caching_tag_list_on?(context) and !(cached_value = cached_tag_list_on(context, owner)).nil?
+              instance_variable_set(var_sym, TagList.from(self["cached_#{var_name}"]))
+            else
+              instance_variable_set(var_sym, TagList.new(*tags_on(context).map(&:name)))
+            end
           else
             owner_hash[owner] = TagList.new(*tags_on(context, owner).map(&:name))
           end
@@ -321,7 +325,11 @@ module ActiveRecord
         
         def reload_with_tag_list(*args)
           self.class.tag_types.each do |tag_type|
-            self.instance_variable_set("@#{tag_type.to_s.singularize}_list", nil)
+            var_names = ["@#{tag_type.to_s.singularize}_list"]
+            var_names.push "#{var_names.first}_on"
+            var_names.each do |var_name|
+              remove_instance_variable(var_name) if instance_variable_defined?(var_name)
+            end
           end
           
           reload_without_tag_list(*args)
