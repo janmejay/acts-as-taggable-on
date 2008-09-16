@@ -31,3 +31,16 @@ task :gem => :gemspec do
   require 'rubygems'
   Gem::Builder.new(eval(File.read(GEMSPEC))).build
 end
+
+begin
+  require 'rubygems'
+  require 'spec/rake/spectask'
+  Spec::Rake::SpecTask.new do |t|
+    t.spec_files = FileList['spec/**/*_spec.rb'] - FileList['spec/rails_skeleton/**/*']
+  end
+rescue LoadError
+  exception = $!
+  task :spec do
+    raise exception
+  end
+end

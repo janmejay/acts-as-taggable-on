@@ -1,9 +1,14 @@
+# To run these specs on a live Rails App, you'll have to change
+# the following requirements. Chances are, you want to replace
+# ALL of the following code with "require /my/rails/app/spec/spec_helper"
+
 require 'pathname'
 dir = Pathname(__FILE__).dirname
 require dir.join('rails_skeleton','spec','spec_helper')
 root = dir.join '..'
 $:.unshift root.join('lib')
 require root.join('init')
+
 
 module Spec::Example::ExampleGroupMethods
   alias :context :describe
