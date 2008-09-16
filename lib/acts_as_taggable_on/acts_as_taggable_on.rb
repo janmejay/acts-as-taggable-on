@@ -224,14 +224,28 @@ module ActiveRecord
         end
         
         def tag_list_on(context, owner=nil)
-          var_name = context.to_s.singularize + "_list"
-          add_custom_context(context)
-          return instance_variable_get("@#{var_name}") unless instance_variable_get("@#{var_name}").nil?
-        
-          if !owner && self.class.caching_tag_list_on?(context) and !(cached_value = cached_tag_list_on(context, owner)).nil?
-            instance_variable_set("@#{var_name}", TagList.from(self["cached_#{var_name}"]))
+          var_name = "@#{context.to_s.singularize}_list"
+          
+          if owner.nil?
+            var_sym = var_name.to_sym
+            value = instance_variable_get(var_name)
           else
-            instance_variable_set("@#{var_name}", TagList.new(*tags_on(context, owner).map(&:name)))
+            var_sym = :"#{var_name}_on"
+            owner_hash = instance_variable_get(var_sym)
+            unless owner_hash
+              owner_hash = instance_variable_set(var_sym, {})
+            end
+            value = owner_hash[owner]
+          end
+          
+          return value unless value.nil?
+          
+          add_custom_context(context)
+        
+          if owner.nil? && self.class.caching_tag_list_on?(context) and !(cached_value = cached_tag_list_on(context, owner)).nil?
+            instance_variable_set(var_sym, TagList.from(self["cached_#{var_name}"]))
+          else
+            owner_hash[owner] = TagList.new(*tags_on(context, owner).map(&:name))
           end
         end
         
