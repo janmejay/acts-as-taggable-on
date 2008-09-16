@@ -1,4 +1,9 @@
-require File.dirname(__FILE__) + '/../../../../spec/spec_helper'
+require 'pathname'
+dir = Pathname(__FILE__).dirname
+require dir.join('rails_skeleton','spec','spec_helper')
+root = dir.join '..'
+$:.unshift root.join('lib')
+require root.join('init')
 
 module Spec::Example::ExampleGroupMethods
   alias :context :describe
