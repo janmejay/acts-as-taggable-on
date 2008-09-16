@@ -8,9 +8,11 @@ Gem::Specification.new do |s|
   s.description = "Acts As Taggable On provides the ability to have multiple tag contexts on a single model in ActiveRecord. It also has support for tag clouds, related items, taggers, and more."
   s.has_rdoc = false
   s.authors = ["Michael Bleigh", 'Mathieu Fosse', 'David Masover']
-  s.files = [ "CHANGELOG",
+  s.files = (
+              [ "CHANGELOG",
               "MIT-LICENSE",
               "README" ] + RUBY_FILES
+            ).reject {|f| f =~ /rails_skeleton/}
   #s.rdoc_options = ["--main", "README.txt"]
   #s.extra_rdoc_files = ["History.txt", "Manifest.txt", "README.txt"]
   #s.add_dependency("mbleigh-mash", [">= 0.0.5"])
