@@ -28,8 +28,8 @@ describe "Tagger" do
     @user2.tag(@taggable, :with=>'sql,css', :on=>:tags)
     
     @taggable.reload
+    
     @taggable.tags_from(@user).to_s.should == 'ruby, scheme'
-    @taggable.reload
     @taggable.tags_from(@user2).to_s.should == 'sql, css'
   end
   
@@ -39,14 +39,14 @@ describe "Tagger" do
     @user2.tag(@taggable, :with=>'ruby,rubyonrails', :on=>:tags)
     
     @taggable.reload
+    
     @taggable.tags_from(@user).to_s.should == 'ruby, scheme'
-    @taggable.reload
     @taggable.tags_from(@user2).to_s.should == 'ruby, rubyonrails'
     
     @user.tag(@taggable, :with=>'merb', :on=>:tags)
     @taggable.reload
+    
     @taggable.tags_from(@user).to_s.should == 'merb'
-    @taggable.reload
     @taggable.tags_from(@user2).to_s.should == 'ruby, rubyonrails'
   end
   
