@@ -33,7 +33,7 @@ module ActiveRecord
               ( opts[:force] || taggable.tag_types.include?(opts[:on]) )
 
           taggable.set_tag_list_on(opts[:on].to_s, opts[:with], self)
-          taggable.save
+          taggable.save!
         end
         
         def is_tagger?
