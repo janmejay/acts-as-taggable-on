@@ -23,7 +23,7 @@ module ActiveRecord
         def self.included(base)
         end
         
-        def tag(taggable, opts={})
+        def tag_without_save(taggable, opts={})
           opts.reverse_merge!(:force => true)
 
           return false unless taggable.respond_to?(:is_taggable?) && taggable.is_taggable?
@@ -33,6 +33,10 @@ module ActiveRecord
               ( opts[:force] || taggable.tag_types.include?(opts[:on]) )
 
           taggable.set_tag_list_on(opts[:on].to_s, opts[:with], self)
+        end
+        
+        def tag taggable, opts
+          tag_without_save taggable, opts
           taggable.save!
         end
         
