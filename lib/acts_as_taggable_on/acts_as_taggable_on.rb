@@ -125,29 +125,44 @@ module ActiveRecord
           return {} if tags.empty?
 
           conditions = []
+          tagging_joins = []
+          tag_joins = []
+          
           conditions << sanitize_sql(options.delete(:conditions)) if options[:conditions]
           
-          unless (on = options.delete(:on)).nil?
-            conditions << sanitize_sql(["context = ?",on.to_s])
-          end
-
           taggings_alias, tags_alias = "#{table_name}_taggings", "#{table_name}_tags"
+          
+          unless (on = options.delete(:on)).nil?
+            tagging_joins << ['?.context = ?', taggings_alias, on.to_s]
+          end
+          
+          tagging_joins << ['?.taggable_id = ?.?', taggings_alias, table_name, primary_key]
+          tagging_joins << ['?.taggable_type = ?', taggings_alias, base_class.name]
+          
+          tag_joins << ['?.id = ?.tag_id', tags_alias, taggings_alias]
+          tag_joins << ['?.name IN (?)', tags_alias, tags]
 
           if options.delete(:exclude)
-            tags_conditions = tags.map { |t| sanitize_sql(["#{Tag.table_name}.name LIKE ?", t]) }.join(" OR ")
-            conditions << sanitize_sql(["#{table_name}.id NOT IN (SELECT #{Tagging.table_name}.taggable_id FROM #{Tagging.table_name} LEFT OUTER JOIN #{Tag.table_name} ON #{Tagging.table_name}.tag_id = #{Tag.table_name}.id WHERE (#{tags_conditions}) AND #{Tagging.table_name}.taggable_type = #{quote_value(base_class.name)})", tags])
+            conditions << ['(?.id IS NULL OR ?.id IS NULL)', taggings_alias, tags_alias]
+            join_type = 'LEFT OUTER JOIN'
           else
-            conditions << tags.map { |t| sanitize_sql(["#{tags_alias}.name LIKE ?", t]) }.join(" OR ")
+            conditions << ['?.id IS NOT NULL', tags_alias]
+            join_type = 'JOIN'
 
             if options.delete(:match_all)
-              group = "#{taggings_alias}.taggable_id HAVING COUNT(#{taggings_alias}.taggable_id) = #{tags.size}"
+              group = sanitize_sql(['?.taggable_id HAVING COUNT(?.taggable_id) = ?', taggings_alias, taggings_alias, tags.size])
             end
           end
           
+          tagging_joins = sanitize_sql(["#{join_type} ? AS ? ON ", Tagging.table_name, taggings_alias]) +
+              ' ' + tagging_joins.map{|x| sanitize_sql(x)}.join(' AND ')
+          
+          tag_joins = sanitize_sql(["#{join_type} ? AS ? ON", Tag.table_name, tags_alias]) +
+              ' ' + tag_joins.map{|x| sanitize_sql(x)}.join(' AND ')
+          
           { :select => "DISTINCT #{table_name}.*",
-            :joins => "LEFT OUTER JOIN #{Tagging.table_name} #{taggings_alias} ON #{taggings_alias}.taggable_id = #{table_name}.#{primary_key} AND #{taggings_alias}.taggable_type = #{quote_value(base_class.name)} " +
-                      "LEFT OUTER JOIN #{Tag.table_name} #{tags_alias} ON #{tags_alias}.id = #{taggings_alias}.tag_id",
-            :conditions => conditions.join(" AND "),
+            :joins => "#{tagging_joins} #{tag_joins}",
+            :conditions => conditions.map{|x| sanitize_sql(x)}.join(' AND '),
             :group      => group
           }.update(options)
         end    
