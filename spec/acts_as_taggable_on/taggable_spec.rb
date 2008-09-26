@@ -65,13 +65,13 @@ describe "Taggable" do
     TaggableModel.tagged_with("bob", :on => :tags).first.should == @taggable
   end
   
-  # it "should not care about case" do
-  #   bob = TaggableModel.create(:name => "Bob", :tag_list => "ruby")
-  #   frank = TaggableModel.create(:name => "Frank", :tag_list => "Ruby")
-  #   
-  #   Tag.find(:all).size.should == 1
-  #   TaggableModel.find_tagged_with("ruby").should == TaggableModel.find_tagged_with("Ruby")
-  # end
+  it "should not care about case" do
+    bob = TaggableModel.create(:name => "Bob", :tag_list => "ruby")
+    frank = TaggableModel.create(:name => "Frank", :tag_list => "Ruby")
+    
+    Tag.find(:all).size.should == 1
+    TaggableModel.find_tagged_with("ruby").should == TaggableModel.find_tagged_with("Ruby")
+  end
   
   it "should be able to get tag counts on model as a whole" do
     bob = TaggableModel.create(:name => "Bob", :tag_list => "ruby, rails, css")

@@ -140,7 +140,7 @@ module ActiveRecord
           tagging_joins << ['?.taggable_type = ?', taggings_alias, base_class.name]
           
           tag_joins << ['?.id = ?.tag_id', tags_alias, taggings_alias]
-          tag_joins << ['?.name IN (?)', tags_alias, tags]
+          tag_joins << ['lower(?.name) IN (?)', tags_alias, tags.map{|x|x.downcase}]
 
           if options.delete(:exclude)
             conditions << ['(?.id IS NULL OR ?.id IS NULL)', taggings_alias, tags_alias]
