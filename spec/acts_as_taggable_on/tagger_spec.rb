@@ -9,6 +9,17 @@ describe "Tagger" do
     @taggable2 = TaggableModel.new(:name => "John Doe")
   end
   
+  it "should not delete all tags by a tagger when one of the taggables removes a tag by him" do
+    @taggable.set_tag_list_on(:languages, '"british english", dutch', @user)
+    @taggable2.set_tag_list_on(:languages, '"british english"', @user)
+    @taggable.save!
+    @taggable2.save!
+    @taggable.set_tag_list_on(:languages, 'french', @user)
+    @taggable.save!
+    @taggable2.reload
+    @taggable2.language_list.should == ['british english']
+  end
+  
   it "should have taggings" do
     @user.tag(@taggable, :with=>'ruby,scheme', :on=>:tags)
     @user.owned_taggings.size == 2

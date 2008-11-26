@@ -325,9 +325,12 @@ module ActiveRecord
             owner = instance_variable_get("@#{tag_type.singularize}_list").owner
             new_tag_names = instance_variable_get("@#{tag_type.singularize}_list") - tags_on(tag_type, owner).map(&:name)
             old_tags = tags_on(tag_type, owner).reject { |tag| instance_variable_get("@#{tag_type.singularize}_list").include?(tag.name) }
-          
+            
             self.class.transaction do
-              (owner.nil? ? base_tags : owner.owned_tags).delete(*old_tags) if old_tags.any?
+              if old_tags.any?
+                proxy = owner.nil? ? taggings : owner.owned_taggings.scoped(:conditions => {:taggable_id => self.id, :taggable_type => self.class.name})
+                Tagging.delete(proxy.find(:all, :conditions => {:tag_id => old_tags}))
+              end
 
               new_tag_names.each do |new_tag_name|
                 new_tag = Tag.find_or_create_with_like_by_name(new_tag_name)
