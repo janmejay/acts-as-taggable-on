@@ -13,6 +13,22 @@ describe Tag do
     @tag.should be_valid
   end
   
+  it "should be able to look up a tag with name having escape sequences" do
+    @tag.name = name = '"\x3c'
+    @tag.save!
+    Tag.should_receive(:create).never
+    Tag.find_or_create_with_eq_by_name(name).should == @tag
+  end
+
+  it "should be able to look up a tag with name having escape sequences[EVEN WITH MYSQL]" do
+    with_mysql do
+      @tag.name = name = '"\x3c'
+      @tag.save!
+      Tag.should_receive(:create).never
+      Tag.find_or_create_with_eq_by_name(name).should == @tag
+    end
+  end
+  
   it "should equal a tag with the same name" do
     @tag.name = "awesome"
     new_tag = Tag.new(:name => "awesome")

@@ -5,9 +5,9 @@ class Tag < ActiveRecord::Base
   validates_uniqueness_of :name
   
   # LIKE is used for cross-database case-insensitivity
-  def self.find_or_create_with_like_by_name(name)
+  def self.find_or_create_with_eq_by_name(name)
     name.downcase!
-    find(:first, :conditions => ["name LIKE ?", name]) || create(:name => name)
+    find(:first, :conditions => ["name = ?", name]) || create(:name => name)
   end
   
   def ==(object)

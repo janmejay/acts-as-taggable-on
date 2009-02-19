@@ -4,10 +4,32 @@
 
 require 'rubygems'
 require 'activerecord'
-ActiveRecord::Base.establish_connection(:adapter => 'sqlite3',
-                                        :database => ':memory:',
-                                        :timeout => 5000,
-                                        :encoding => 'utf8')
+puts <<-NOTE
+  FOO
+NOTE
+
+$sqlite_conf = {
+  :adapter => 'sqlite3',
+  :database => File.join(File.dirname(__FILE__), 'db.sqlite3'),
+  :encoding => 'utf8'
+}
+
+ActiveRecord::Base.establish_connection($sqlite_conf)
+
+$mysql_conf = {
+  :adapter => 'mysql',
+  :database => 'acts_as_taggable_on',
+  :username => 'acts_taggable',
+  :password => 'acts_as_taggable_on',
+  :encoding => 'utf8'
+}
+
+def with_mysql
+  ActiveRecord::Base.establish_connection($mysql_conf)
+  yield
+ensure
+  ActiveRecord::Base.establish_connection($sqlite_conf)
+end
 
 plugin_spec_dir = File.dirname(__FILE__)
 Object::RAILS_DEFAULT_LOGGER = ActiveRecord::Base.logger = Logger.new(plugin_spec_dir + "/debug.log")
@@ -18,6 +40,10 @@ require File.join(File.dirname(__FILE__), '..', 'init')
 
 module Spec::Example::ExampleGroupMethods
   alias :context :describe
+end
+
+with_mysql do
+  load(File.dirname(__FILE__) + '/schema.rb')
 end
 
 load(File.dirname(__FILE__) + '/schema.rb')
