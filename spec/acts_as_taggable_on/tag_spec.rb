@@ -7,9 +7,10 @@ describe Tag do
   end
   
   it "should require a name" do
-    @tag.should have(1).errors_on(:name)
+    @tag.should_not be_valid
+    @tag.should have(1).error
     @tag.name = "something"
-    @tag.should have(0).errors_on(:name)    
+    @tag.should be_valid
   end
   
   it "should equal a tag with the same name" do

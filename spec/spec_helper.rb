@@ -2,20 +2,23 @@
 # the following requirements. Chances are, you want to replace
 # ALL of the following code with "require /my/rails/app/spec/spec_helper"
 
-require 'pathname'
-dir = Pathname(__FILE__).dirname
-require dir.join('rails_skeleton','spec','spec_helper')
-root = dir.join '..'
-$:.unshift root.join('lib')
-require root.join('init')
+require 'rubygems'
+require 'activerecord'
+ActiveRecord::Base.establish_connection(:adapter => 'sqlite3',
+                                        :database => ':memory:',
+                                        :timeout => 5000,
+                                        :encoding => 'utf8')
 
+plugin_spec_dir = File.dirname(__FILE__)
+Object::RAILS_DEFAULT_LOGGER = ActiveRecord::Base.logger = Logger.new(plugin_spec_dir + "/debug.log")
+
+$LOAD_PATH << File.join(File.dirname(__FILE__), '..', 'lib')
+
+require File.join(File.dirname(__FILE__), '..', 'init')
 
 module Spec::Example::ExampleGroupMethods
   alias :context :describe
 end
-
-plugin_spec_dir = File.dirname(__FILE__)
-ActiveRecord::Base.logger = Logger.new(plugin_spec_dir + "/debug.log")
 
 load(File.dirname(__FILE__) + '/schema.rb')
 
